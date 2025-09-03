@@ -42,19 +42,12 @@ class DebitCardControllerTest extends TestCase
     public function testCustomerCannotSeeAListOfDebitCardsOfOtherCustomers()
     {
         // get /debit-cards
+        $this->actingAs($this->user);
         $otherUser = User::factory()->create();
 
-        DebitCard::factory()->count(3)->for($otherUser)->create([
-            'number' => '1111222233334444',
-            'type' => 'debit',
-            'expiration_date' => now()->addYear(),
-            'disabled_at' => null,
-        ]);
+        DebitCard::factory()->count(3)->for($otherUser)->create();
 
         DebitCard::factory()->count(2)->for($this->user)->create([
-            'number' => '5555666677778888',
-            'type' => 'debit',
-            'expiration_date' => now()->addYear(),
             'disabled_at' => null,
         ]);
 
