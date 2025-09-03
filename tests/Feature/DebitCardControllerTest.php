@@ -134,4 +134,63 @@ class DebitCardControllerTest extends TestCase
     }
 
     // Extra bonus for extra tests :)
+    public function testCustomerCannotDeactivateAnotherUsersDebitCard()
+    {
+        $otherUser = User::factory()->create();
+
+        $debitCard = DebitCard::factory()->for($otherUser)->create();
+
+        $response = $this->putJson("/api/debit-cards/{$debitCard->id}", [
+            'is_active' => false
+        ]);
+
+        $response->assertStatus(403);
+
+        $debitCard->refresh();
+    }
+
+    public function testCustomerCannotDeleteAnotherUsersDebitCard()
+    {
+        $otherUser = User::factory()->create();
+
+        $debitCard = DebitCard::factory()->for($otherUser)->create();
+
+        $response = $this->deleteJson("/api/debit-cards/{$debitCard->id}");
+
+        $response->assertStatus(403);
+
+        $this->assertDatabaseHas('debit_cards', [
+            'id' => $debitCard->id,
+        ]);
+    }
+
+    public function testCustomerCannotActivateExpiredDebitCard()
+    {
+        $this->actingAs($this->user);
+        $debitCard = DebitCard::factory()->for($this->user)->create([
+            'expiration_date' => now()->subDay(),
+        ]);
+
+        $response = $this->putJson("/api/debit-cards/{$debitCard->id}", [
+            'is_active' => true,
+        ]);
+
+        $response->assertStatus(200);
+
+        $debitCard->refresh();
+
+        $this->assertDatabaseHas('debit_cards', [
+            'id' => $debitCard->id,
+        ]);
+
+        $data = $response->json();
+        $this->assertArrayHasKey('is_active', $data);
+    }
+
+    public function testCustomerCannotCreateDebitCardWithoutType()
+    {
+        $response = $this->postJson('/api/debit-cards', []);
+
+        $response->assertStatus(422);
+    }
 }
