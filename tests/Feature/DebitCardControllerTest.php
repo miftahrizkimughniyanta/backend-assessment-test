@@ -23,12 +23,9 @@ class DebitCardControllerTest extends TestCase
     public function testCustomerCanSeeAListOfDebitCards()
     {
         // get /debit-cards
+        $this->actingAs($this->user);
         DebitCard::factory()->count(3)->for($this->user)->create([
-            'user_id' => $this->user->id,
-            'number' => '1234567890123456',
-            'type' => 'debit',
             'disabled_at' => null,
-            'expiration_date' => now()->addYear(),
         ]);
 
         $response = $this->getJson('/api/debit-cards');
