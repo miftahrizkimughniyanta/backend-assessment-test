@@ -80,6 +80,13 @@ class DebitCardControllerTest extends TestCase
     public function testCustomerCannotSeeASingleDebitCardDetails()
     {
         // get api/debit-cards/{debitCard}
+        $otherUser = User::factory()->create();
+
+        $debitCard = DebitCard::factory()->for($otherUser)->create();
+
+        $response = $this->getJson("/api/debit-cards/{$debitCard->id}");
+
+        $response->assertStatus(403);
     }
 
     public function testCustomerCanActivateADebitCard()
