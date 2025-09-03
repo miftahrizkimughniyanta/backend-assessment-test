@@ -75,6 +75,21 @@ class DebitCardControllerTest extends TestCase
     public function testCustomerCanSeeASingleDebitCardDetails()
     {
         // get api/debit-cards/{debitCard}
+        $this->actingAs($this->user);
+        $debitCard = DebitCard::factory()->for($this->user)->create();
+
+        $response = $this->getJson("/api/debit-cards/{$debitCard->id}");
+
+        $response->assertStatus(200);
+
+        $json = $response->json();
+
+        $data = $json['data'] ?? $json;
+
+        $this->assertEquals($debitCard->id, $data['id']);
+        $this->assertEquals($debitCard->number, $data['number']);
+        $this->assertEquals($debitCard->type, $data['type']);
+        $this->assertEquals($this->user->id, $data['user_id'] ?? $debitCard->user_id);
     }
 
     public function testCustomerCannotSeeASingleDebitCardDetails()
