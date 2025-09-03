@@ -69,6 +69,7 @@ class DebitCardControllerTest extends TestCase
     public function testCustomerCanCreateADebitCard()
     {
         // post /debit-cards
+        $this->actingAs($this->user);
         $payload = [
             'type' => 'debit',
             'expiration_date' => now()->addYear()->toDateString(),
