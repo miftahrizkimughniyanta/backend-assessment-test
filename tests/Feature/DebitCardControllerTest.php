@@ -69,6 +69,18 @@ class DebitCardControllerTest extends TestCase
     public function testCustomerCanCreateADebitCard()
     {
         // post /debit-cards
+        $payload = [
+            'type' => 'debit',
+            'expiration_date' => now()->addYear()->toDateString(),
+        ];
+
+        $response = $this->postJson('/api/debit-cards', $payload);
+
+        $response->assertStatus(201);
+
+        $this->assertDatabaseHas('debit_cards', [
+            'user_id' => $this->user->id,
+        ]);
     }
 
     public function testCustomerCanSeeASingleDebitCardDetails()
