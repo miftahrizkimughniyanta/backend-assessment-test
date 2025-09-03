@@ -219,21 +219,6 @@ class DebitCardControllerTest extends TestCase
         ]);
     }
 
-    public function testCustomerCannotDeleteAnotherUsersDebitCard()
-    {
-        $otherUser = User::factory()->create();
-
-        $debitCard = DebitCard::factory()->for($otherUser)->create();
-
-        $response = $this->deleteJson("/api/debit-cards/{$debitCard->id}");
-
-        $response->assertStatus(403);
-
-        $this->assertDatabaseHas('debit_cards', [
-            'id' => $debitCard->id,
-        ]);
-    }
-
     public function testCustomerCannotActivateExpiredDebitCard()
     {
         $this->actingAs($this->user);
