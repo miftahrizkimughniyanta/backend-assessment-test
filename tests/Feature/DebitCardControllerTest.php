@@ -255,5 +255,4 @@ class DebitCardControllerTest extends TestCase
 
         $response->assertStatus(404);
     }
-
 }
