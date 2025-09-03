@@ -255,4 +255,20 @@ class DebitCardControllerTest extends TestCase
 
         $response->assertStatus(404);
     }
+
+    public function testCustomerCanActivateAndDeactivateDebitCard()
+    {
+        $this->actingAs($this->user);
+        $debitCard = DebitCard::factory()->for($this->user)->create();
+
+        $response = $this->putJson("/api/debit-cards/{$debitCard->id}", [
+            'is_active' => true,
+        ]);
+        $response->assertStatus(200);
+
+        $response = $this->putJson("/api/debit-cards/{$debitCard->id}", [
+            'is_active' => false,
+        ]);
+        $response->assertStatus(200);
+    }
 }
