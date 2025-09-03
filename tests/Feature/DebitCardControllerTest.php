@@ -23,13 +23,8 @@ class DebitCardControllerTest extends TestCase
     public function testCustomerCanSeeAListOfDebitCards()
     {
         // get /debit-cards
-        $user = User::factory()->create();
-
-        // gunakan default guard (web) untuk test
-        $this->actingAs($user);
-
-        DebitCard::factory()->count(3)->for($user)->create([
-            'user_id' => $user->id,
+        DebitCard::factory()->count(3)->for($this->user)->create([
+            'user_id' => $this->user->id,
             'number' => '1234567890123456',
             'type' => 'debit',
             'disabled_at' => null,
@@ -42,17 +37,34 @@ class DebitCardControllerTest extends TestCase
 
         $json = $response->json();
 
-        // Sesuaikan assert dengan struktur JSON
-        if (isset($json['data'])) {
-            $this->assertCount(3, $json['data']);
-        } else {
-            $this->assertCount(3, $json);
-        }
+        $this->assertCount(3, $json);
     }
 
     public function testCustomerCannotSeeAListOfDebitCardsOfOtherCustomers()
     {
-        // get /debit-cards
+        $otherUser = User::factory()->create();
+
+        DebitCard::factory()->count(3)->for($otherUser)->create([
+            'number' => '1111222233334444',
+            'type' => 'debit',
+            'expiration_date' => now()->addYear(),
+            'disabled_at' => null,
+        ]);
+
+        DebitCard::factory()->count(2)->for($this->user)->create([
+            'number' => '5555666677778888',
+            'type' => 'debit',
+            'expiration_date' => now()->addYear(),
+            'disabled_at' => null,
+        ]);
+
+        $response = $this->getJson('/api/debit-cards');
+
+        $response->assertStatus(200);
+
+        $json = $response->json();
+
+        $this->assertCount(2, $json);
     }
 
     public function testCustomerCanCreateADebitCard()
