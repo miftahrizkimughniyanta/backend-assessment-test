@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Passport\Passport;
+use App\Models\DebitCard;
+use App\Models\DebitCardTransaction;
 use Tests\TestCase;
 
 class DebitCardControllerTest extends TestCase
