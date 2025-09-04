@@ -70,4 +70,16 @@ class DebitCardTransactionControllerTest extends TestCase
         $response->assertJsonValidationErrors(['currency_code']);
     }
 
+    public function testCustomerCannotDeleteOtherCustomerTransaction()
+    {
+        $otherUser = User::factory()->create();
+        $otherDebitCard = DebitCard::factory()->create(['user_id' => $otherUser->id]);
+        $transaction = DebitCardTransaction::factory()->create([
+            'debit_card_id' => $otherDebitCard->id,
+        ]);
+
+        $response = $this->deleteJson('/api/debit-card-transactions/' . $transaction->id);
+
+        $response->assertStatus(405);
+    }
 }
