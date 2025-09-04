@@ -36,6 +36,11 @@ class ScheduledRepayment extends Model
         'status',
     ];
 
+    protected $casts = [
+        'amount' => 'integer',
+        'outstanding_amount' => 'integer',
+    ];
+    
     /**
      * A Scheduled Repayment belongs to a Loan
      *
