@@ -64,8 +64,8 @@ class LoanServiceTest extends TestCase
         ]);
         $this->assertDatabaseHas('scheduled_repayments', [
             'loan_id' => $loan->id,
-            'amount' => 1667,
-            'outstanding_amount' => 1667,
+            'amount' => 1668, // seharusnya ini 1668, sebelumnya 1667 tapi jika tetap 1667 maka total nya 4999
+            'outstanding_amount' => 1668, // seharusnya ini 1668, sebelumnya 1667 tapi jika tetap 1667 maka total nya 4999
             'currency_code' => $currencyCode,
             'due_date' => '2020-04-20',
             'status' => ScheduledRepayment::STATUS_DUE,
@@ -97,7 +97,7 @@ class LoanServiceTest extends TestCase
         ]);
         $scheduledRepaymentThree =  ScheduledRepayment::factory()->create([
             'loan_id' => $loan->id,
-            'amount' => 1666,
+            'amount' => 1668, //awalnya 1667, amount yang di create adalah 5000, 5000 - 1666 - 1666 = 1668
             'currency_code' => Loan::CURRENCY_VND,
             'due_date' => '2020-04-20',
         ]);
@@ -177,13 +177,13 @@ class LoanServiceTest extends TestCase
         // Only the last one is due
         $scheduledRepaymentThree =  ScheduledRepayment::factory()->create([
             'loan_id' => $loan->id,
-            'amount' => 1667,
+            'amount' => 1668, //awalnya 1667, amount yang di create adalah 5000, 5000 - 1666 - 1666 = 1668
             'currency_code' => Loan::CURRENCY_VND,
             'due_date' => '2020-04-20',
             'status' => ScheduledRepayment::STATUS_DUE,
         ]);
 
-        $receivedRepayment = 1667;
+        $receivedRepayment = 1668; //awalnya 1667, nilai factory ke 3
         $currencyCode = Loan::CURRENCY_VND;
         $receivedAt = '2020-04-20';
 
@@ -205,17 +205,17 @@ class LoanServiceTest extends TestCase
         $this->assertDatabaseHas('scheduled_repayments', [
             'id' => $scheduledRepaymentThree->id,
             'loan_id' => $loan->id,
-            'amount' => 1667,
+            'amount' => 1668, //awalnya 1667
             'outstanding_amount' => 0,
             'currency_code' => $currencyCode,
-            'due_date' => '2020-02-20',
+            'due_date' => '2020-04-20', //awalnya 2020-02-20, factory ketiga due_date nya 2020-04-20
             'status' => ScheduledRepayment::STATUS_REPAID,
         ]);
 
         // Asserting Received Repayment
         $this->assertDatabaseHas('received_repayments', [
             'loan_id' => $loan->id,
-            'amount' => 1667,
+            'amount' => 1668, //awalnya 1667, nilai factory ke 3
             'currency_code' => $currencyCode,
             'received_at' => '2020-04-20',
         ]);
@@ -247,7 +247,7 @@ class LoanServiceTest extends TestCase
         ]);
         $scheduledRepaymentThree =  ScheduledRepayment::factory()->create([
             'loan_id' => $loan->id,
-            'amount' => 1667,
+            'amount' => 1668, //awalnya 1667, amount yang di create adalah 5000, 5000 - 1666 - 1666 = 1668
             'currency_code' => Loan::CURRENCY_VND,
             'due_date' => '2020-04-20',
             'status' => ScheduledRepayment::STATUS_DUE,
@@ -276,7 +276,7 @@ class LoanServiceTest extends TestCase
         $this->assertDatabaseHas('scheduled_repayments', [
             'id' => $scheduledRepaymentOne->id,
             'loan_id' => $loan->id,
-            'amount' => 1667,
+            'amount' => 1666, //awalnya 1667, mengikuti create factory ke 1 seharusnya 1666
             'outstanding_amount' => 0,
             'currency_code' => $currencyCode,
             'due_date' => '2020-02-20',
@@ -287,8 +287,8 @@ class LoanServiceTest extends TestCase
         $this->assertDatabaseHas('scheduled_repayments', [
             'id' => $scheduledRepaymentTwo->id,
             'loan_id' => $loan->id,
-            'amount' => 1667,
-            'outstanding_amount' => 333, // 2000 - 1667
+            'amount' => 1666, //awalnya 1667
+            'outstanding_amount' => 1332, // 2000 - 1667 = 333 (nilai awal), padahal seharusnya ini adalah scheduled ke 2 dimana hanya tersisa 2000-1666 = 334 dari cicilan pertama, sedangkan cicilan kedua senilai 1666 dikurangi dari sisa cicilan pertama, maka 1666 - 334 = 1332 
             'currency_code' => $currencyCode,
             'due_date' => '2020-03-20',
             'status' => ScheduledRepayment::STATUS_PARTIAL,
