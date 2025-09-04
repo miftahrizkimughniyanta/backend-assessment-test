@@ -25,7 +25,15 @@ class ScheduledRepaymentFactory extends Factory
             // TODO: Complete factory
             'loan_id'            => \App\Models\Loan::factory(),
             'amount'             => $this->faker->numberBetween(500, 5000),
+<<<<<<< HEAD
             'outstanding_amount' => fn (array $attributes) => $attributes['amount'],
+=======
+            'outstanding_amount' => function (array $attributes) {
+                return ($attributes['status'] ?? ScheduledRepayment::STATUS_DUE) === ScheduledRepayment::STATUS_REPAID
+                    ? 0
+                    : $attributes['amount'];
+            },
+>>>>>>> 580ca52 (ScheduledRepaymentFactory)
             'currency_code'      => $this->faker->randomElement(['VND', 'SGD']),
             'due_date'           => $this->faker->dateTimeBetween('now', '+3 months')->format('Y-m-d'),
             'status'             => ScheduledRepayment::STATUS_DUE,
