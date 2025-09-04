@@ -25,7 +25,6 @@ class DebitCardControllerTest extends TestCase
     public function testCustomerCanSeeAListOfDebitCards()
     {
         // get /debit-cards
-        $this->actingAs($this->user);
         DebitCard::factory()->count(3)->for($this->user)->create([
             'disabled_at' => null,
         ]);
@@ -42,7 +41,6 @@ class DebitCardControllerTest extends TestCase
     public function testCustomerCannotSeeAListOfDebitCardsOfOtherCustomers()
     {
         // get /debit-cards
-        $this->actingAs($this->user);
         $otherUser = User::factory()->create();
 
         DebitCard::factory()->count(3)->for($otherUser)->create();
@@ -64,7 +62,6 @@ class DebitCardControllerTest extends TestCase
     public function testCustomerCanCreateADebitCard()
     {
         // post /debit-cards
-        $this->actingAs($this->user);
         $payload = [
             'type' => 'debit',
             'expiration_date' => now()->addYear()->toDateString(),
@@ -82,16 +79,13 @@ class DebitCardControllerTest extends TestCase
     public function testCustomerCanSeeASingleDebitCardDetails()
     {
         // get api/debit-cards/{debitCard}
-        $this->actingAs($this->user);
         $debitCard = DebitCard::factory()->for($this->user)->create();
 
         $response = $this->getJson("/api/debit-cards/{$debitCard->id}");
 
         $response->assertStatus(200);
 
-        $json = $response->json();
-
-        $data = $json['data'] ?? $json;
+        $data = $response->json();
 
         $this->assertEquals($debitCard->id, $data['id']);
         $this->assertEquals($debitCard->number, $data['number']);
@@ -114,7 +108,6 @@ class DebitCardControllerTest extends TestCase
     public function testCustomerCanActivateADebitCard()
     {
         // put api/debit-cards/{debitCard}
-        $this->actingAs($this->user);
         $debitCard = DebitCard::factory()->for($this->user)->create();
 
         $payload = [
@@ -138,7 +131,6 @@ class DebitCardControllerTest extends TestCase
     public function testCustomerCanDeactivateADebitCard()
     {
         // put api/debit-cards/{debitCard}
-        $this->actingAs($this->user);
         $debitCard = DebitCard::factory()->for($this->user)->create();
 
         $payload = [
@@ -156,12 +148,22 @@ class DebitCardControllerTest extends TestCase
     public function testCustomerCannotUpdateADebitCardWithWrongValidation()
     {
         // put api/debit-cards/{debitCard}
+        $debitCard = DebitCard::factory()->for($this->user)->create();
+        $originalDisabledAt = $debitCard->disabled_at;
+        $payload = ['is_active' => 'invalid_string'];
+
+        $response = $this->putJson("/api/debit-cards/{$debitCard->id}", $payload);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['is_active']);
+
+        $debitCard->refresh();
+        $this->assertEquals($originalDisabledAt, $debitCard->disabled_at);
     }
 
     public function testCustomerCanDeleteADebitCard()
     {
         // delete api/debit-cards/{debitCard}
-        $this->actingAs($this->user);
         $debitCard = DebitCard::factory()->for($this->user)->create();
         $response = $this->deleteJson("/api/debit-cards/{$debitCard->id}");
 
@@ -175,7 +177,6 @@ class DebitCardControllerTest extends TestCase
     public function testCustomerCannotDeleteADebitCardWithTransaction()
     {
         // delete api/debit-cards/{debitCard}
-        $this->actingAs($this->user);
         $debitCard = DebitCard::factory()->for($this->user)->create();
         DebitCardTransaction::factory()->for($debitCard)->create();
 
@@ -221,7 +222,6 @@ class DebitCardControllerTest extends TestCase
 
     public function testCustomerCannotActivateExpiredDebitCard()
     {
-        $this->actingAs($this->user);
         $debitCard = DebitCard::factory()->for($this->user)->create([
             'expiration_date' => now()->subDay(),
         ]);
@@ -251,7 +251,6 @@ class DebitCardControllerTest extends TestCase
     
     public function testCustomerCannotDeleteAlreadyDeletedDebitCard()
     {
-        $this->actingAs($this->user);
         $debitCard = DebitCard::factory()->for($this->user)->create();
         $debitCard->delete();
 
@@ -262,7 +261,6 @@ class DebitCardControllerTest extends TestCase
 
     public function testCustomerCanActivateAndDeactivateDebitCard()
     {
-        $this->actingAs($this->user);
         $debitCard = DebitCard::factory()->for($this->user)->create();
 
         $response = $this->putJson("/api/debit-cards/{$debitCard->id}", [
