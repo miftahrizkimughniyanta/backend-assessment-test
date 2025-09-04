@@ -86,5 +86,35 @@ class LoanService
     public function repayLoan(Loan $loan, int $amount, string $currencyCode, string $receivedAt): ReceivedRepayment
     {
         //
+        $nilaibayar = $amount;
+        $dataPinjaman = $loan->scheduledRepayments()
+            ->whereIn('status', [ScheduledRepayment::STATUS_DUE, ScheduledRepayment::STATUS_PARTIAL])
+            ->orderBy('due_date')
+            ->get();
+
+        foreach ($dataPinjaman as $kredit) {
+            if ($nilaibayar <= 0) break;
+
+            $dibayar = min($nilaibayar, $kredit->outstanding_amount);
+            $kredit->outstanding_amount -= $dibayar;
+            $kredit->status = $kredit->outstanding_amount === 0
+                ? ScheduledRepayment::STATUS_REPAID
+                : ScheduledRepayment::STATUS_PARTIAL;
+            $kredit->save();
+            
+            $nilaibayar -= $dibayar;
+        }
+        
+        $outstanding = ScheduledRepayment::where('loan_id', $loan->id)->sum('outstanding_amount');
+        $loan->outstanding_amount = $outstanding;
+        $loan->status = $outstanding === 0 ? Loan::STATUS_REPAID : Loan::STATUS_DUE;
+        $loan->save();
+
+        return ReceivedRepayment::create([
+            'loan_id'       => $loan->id,
+            'amount'        => $amount,
+            'currency_code' => $currencyCode,
+            'received_at'   => $receivedAt,
+        ]);
     }
 }
