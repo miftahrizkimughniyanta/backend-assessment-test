@@ -5,6 +5,9 @@ namespace App\Services;
 use App\Models\Loan;
 use App\Models\ReceivedRepayment;
 use App\Models\User;
+use App\Models\ScheduledRepayment;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class LoanService
 {
